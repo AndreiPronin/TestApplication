@@ -1,0 +1,146 @@
+﻿@model IEnumerable<TestApplication.TimeSlot>
+
+<div id="Modal" class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Выбрана дата</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p><input id="Times" value="0" style="border:none" readonly="readonly" /></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="success" class="btn btn-success" data-dismiss="modal">Записаться</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="ModalCancel" class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+               
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="Cancel" class="btn btn-success" data-dismiss="modal">Отменить Записаться</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="results"></div>
+<div class="jumbotron">
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col" class="text-center">09:00 - 09:30</th>
+                <th scope="col" class="text-center">09:30 - 10:00</th>
+                <th scope="col" class="text-center">10:00 - 10:30</th>
+                <th scope="col" class="text-center">10:30 - 11:00</th>
+                <th scope="col" class="text-center">11:00 - 11:30</th>
+                <th scope="col" class="text-center">11:30 - 12:00</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                @{ TimeSpan TodayTime = new TimeSpan(9, 0, 0);
+                  
+                    bool bool1 = false;
+                }
+
+                @for (int i = 0; i <= 5; i++)
+                {
+                    TimeSpan EndTime = TodayTime + new TimeSpan(0, 30, 0);
+
+                    foreach (var Items in Model)
+                    {
+                        DateTime date = Convert.ToDateTime(Items.BeginTime);
+                        string time = date.ToLongTimeString();
+                        if (TodayTime.ToString().Contains(time))
+                        {
+                            <td class="text-center">
+                                <input name="@i"  class="Cub Inputs CubEnter"
+                                     
+                                       readonly="readonly" value="@DateTime.Now.ToShortDateString() @TodayTime" />
+                            </td>
+                            bool1 = true;
+                            break;
+                        }
+
+                    }
+                    if (bool1 == false)
+                    {
+                        <td class="text-center">
+                            <input  name="@i" class="Cub Inputs "
+                                  
+                                   readonly="readonly" value="@DateTime.Now.ToShortDateString() @TodayTime" />
+                        </td>
+                    }
+                    bool1 = false;
+                    { TodayTime += new TimeSpan(0, 30, 0); }
+                }
+
+
+            </tr>
+        </tbody>
+
+    </table>
+</div>
+<script>
+    $(document).ready(function () { 
+        var time;
+        var NameInput;
+        document.addEventListener('click', function (e) {
+            if (e.target.classList.contains("Inputs")) {
+                time = e.target.parentElement.querySelector("input").value;
+                var classList = e.target.parentElement.querySelector("input").classList;
+                for (var i = 0; i < classList.length; i++) {
+                    if (classList[i] === 'CubEnter') {
+                        $('#ModalCancel').modal('show');
+                        $('#Modal').modal('hide');
+                    } else if (classList[i] != 'CubEnter') {
+                        $('#ModalCancel').modal('hide');
+                        $('#Modal').modal('show');
+                    }
+                }
+                $("#Times").val(time);
+                NameInput = e.target.parentElement.querySelector("input").name;
+            }
+        })
+        $("#success").click(function () {
+            var office = $("#Id").val();
+            var date = time;
+            $('input[name="' + NameInput + '"]').addClass("CubEnter");
+            $.ajax({
+                url: "/home/Arrange/?officeId=" + office + "&&DateAndTime=" + date,
+                type: "get",
+                contentType: "html",
+                success: function (result) {
+                    $("#results").empty();
+                    $("#results").append(result);
+                }
+            })
+        })
+        $("#Cancel").click(function () {
+            var office = $("#Id").val();
+            var date = time;
+            $('input[name="' + NameInput + '"]').removeClass("CubEnter");
+            $.ajax({
+                url: "/home/Cancel/?officeId=" + office + "&&DateAndTime=" + date,
+                type: "get",
+                contentType: "html",
+                success: function (result) {
+                    $("#results").empty();
+                    $("#results").append(result);
+                }
+            })
+        })
+    })
+</script>

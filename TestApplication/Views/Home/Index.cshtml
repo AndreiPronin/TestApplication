@@ -1,0 +1,44 @@
+﻿@model TestApplication.Models.DropDownList
+@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="jumbotron">
+    <div class="row">
+        <div class="col-md-4 text-center">
+            <p>Выберите офис</p>
+            @Html.DropDownListFor(x => x.Id , ViewBag.P1 as SelectList, new { @class = "form-control" })
+        </div>
+        <div class="col-md-4 text-center">
+            <p>Выберите дату</p>
+          
+            <input id="Date" type="date" />
+        </div>
+        <div class="col-md-4 text-center">
+            <br />
+            <br />
+            <button type="button" class="btn btn-success" id="Search">Найти</button>
+        </div>
+    </div>
+</div>
+<div id="result"></div>
+<div class="row">
+    
+</div>
+<script>
+    $(document).ready(function () {
+        $("#Search").click(function () {
+            var office = $("#Id").val();
+            var date = $("#Date").val();
+            $.ajax({
+                url: "/home/GetTimeSlots/?officeId=" + office +"&&DateAndTime=" + date,
+                type: "get",
+                contentType: "html",
+                success: function (result) {
+                    $("#result").empty();
+                    $("#result").append(result);
+                }
+            })
+        })
+    })
+</script>
